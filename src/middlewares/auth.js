@@ -1,4 +1,7 @@
+import jwt from "jsonwebtoken";
 import User from "../../DB/models/user.model.js";
+import { asyncHandler } from "./asyncHandler.js";
+import { status } from "../common/types/enum.js";
 
 const protectedRoute = asyncHandler(async (req, res, next) => {
   // get Token
@@ -21,8 +24,20 @@ const protectedRoute = asyncHandler(async (req, res, next) => {
   // check User by token.userId
   const user = await User.findById(payload.userId);
   // if not exisit res
-  !user && next(new Error("sign up first..", { cause: 404 }));
-
+  if (!user) return next(new Error("sign up first..", { cause: 404 }));
+  if (user.status === status.blocked) {
+    return next(
+      new Error("you have been blocked .. contact us", { cause: 403 })
+    );
+  }
+  if (user.status === status.softDelete) {
+    return next(
+      new Error("you have been Deleted .. pleace sign in", { cause: 403 })
+    );
+  }
+  if (user.status === status.offline) {
+    return next(new Error("you need to sign first", { cause: 400 }));
+  }
   if (user?.changePassAt) {
     // if exisit compare between time Date.now() of User.changePassAt
     // vs token.iat

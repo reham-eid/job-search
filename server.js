@@ -15,10 +15,7 @@ app.use(express.json());
 // API routes
 init(app);
 
-// Page Not Found
-app.all("*", (req, res, next) => {
-  return next(new Error(`Invalid req on ${req.originalUrl}`, { cause: 404 }));
-});
+
 
 app.listen(process.env.PORT, () => {
   console.log(`running on port ${process.env.PORT}`); //port can be string or number

@@ -28,12 +28,6 @@ const companySchema = new Schema(
         required:true,
         trim: true,
       },
-      phone: {
-        type: String,
-        unique: true,
-        required:true,
-        trim: true,
-      },
       city: {
         type: String,
         required: true,
@@ -41,8 +35,8 @@ const companySchema = new Schema(
       },
     },
     numberOfEmployees: {
-      min:Number ,
-      max:Number,
+      from:{type:Number , min:0} ,
+      to:{type:Number , min:1},
     },
     companyHR: {
       type: Types.ObjectId,
@@ -74,9 +68,9 @@ const companySchema = new Schema(
   }
 );
 
-companySchema.pre("findOne", function () {
-  this.populate("jobs"); //return all jobs related to this company
-});
+// companySchema.pre("findOne", function () {
+//   this.populate("jobs"); //return all jobs related to this company
+// });
 
 companySchema.query.search = function (searchCompany) {
   if (searchCompany) {

@@ -6,7 +6,13 @@ const addJobVal = Joi.object({
   jobLocation: generalField.jobLocation.required(),
   workingTime: generalField.workingTime.required(),
   seniorityLevel: generalField.seniorityLevel.required(),
-  jobDescription: generalField.name.min(20).max(200).required(),
+  jobDescription: generalField.name
+    .min(20)
+    .max(200)
+    .message({
+      message: " *jobDescription* length must be at least 20 characters long",
+    })
+    .required(),
   technicalSkills: generalField.skills.required(),
   softSkills: generalField.skills.required(),
 }).required();
@@ -18,7 +24,13 @@ const updateJobVal = Joi.object({
   jobLocation: generalField.jobLocation,
   workingTime: generalField.workingTime,
   seniorityLevel: generalField.seniorityLevel,
-  jobDescription: generalField.name.min(20).max(200),
+
+  jobDescription: generalField.name
+    .min(20)
+    .max(200)
+    .message({
+      message: " *jobDescription* length must be at least 20 characters long",
+    }),
   technicalSkills: generalField.skills,
   softSkills: generalField.skills,
   companyId: generalField.id,
@@ -30,7 +42,6 @@ const paramsJobVal = Joi.object({
 }).required();
 
 const allJobVal = Joi.object({
-
   jobTitle: generalField.name,
   jobLocation: generalField.jobLocation,
   workingTime: generalField.workingTime,
@@ -39,9 +50,7 @@ const allJobVal = Joi.object({
 }).required();
 
 const allJobForOneCompanyVal = Joi.object({
-
   name: generalField.name,
-
 }).required();
 
 const addApplicationVal = Joi.object({
@@ -52,4 +61,11 @@ const addApplicationVal = Joi.object({
   userResume: generalField.file.required(),
 }).required();
 
-export { addJobVal, updateJobVal, allJobForOneCompanyVal,paramsJobVal, allJobVal, addApplicationVal };
+export {
+  addJobVal,
+  updateJobVal,
+  allJobForOneCompanyVal,
+  paramsJobVal,
+  allJobVal,
+  addApplicationVal,
+};

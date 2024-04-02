@@ -2,35 +2,56 @@ import Joi from "joi";
 import generalField from "../../utils/generalFields.js";
 
 const addCompanyVal = Joi.object({
+  name:generalField.name,
+  email:generalField.email,
   companyName: generalField.name.required(),
-  description: generalField.name.min(10).max(200).required(),
+  description: generalField.name
+    .min(10)
+    .max(200)
+    .message({
+      message: " *description* length must be at least 10 characters long✖️ ",
+    })
+    .required(),
   industry: generalField.name.required(),
-  address: Joi.object({
-    street: generalField.name.required(),
-    phone: generalField.phone.required(),
-    city: generalField.name.required(),
-  }).required(),
-  numberOfEmployees: generalField.number.min(11).max(20),
+
+  street: generalField.name.required(),
+  city: generalField.name.required(),
+
+  from: Joi.number()
+    .min(0)
+    .required()
+    .label("minimum number Of Employee [from]"),
+  to: Joi.number()
+    .greater(Joi.ref("from"))
+    .required()
+    .label("maximum number Of Employee [to] "),
+
   companyEmail: generalField.email.lowercase().required(),
 }).required();
 
-const updateCompanyVal = Joi.object({
-  id: generalField.id.required(),
-
+const updateCompanyVal = Joi.object({ 
   companyName: generalField.name,
-  description: generalField.name.min(10).max(200),
+  description: generalField.name
+    .min(10)
+    .max(200)
+    .message({
+      message: " *description* length must be at least 10 characters long✖️ ",
+    }),
   industry: generalField.name,
-  address: Joi.object({
-    street: generalField.name,
-    phone: generalField.name,
-    city: generalField.name,
+  street: generalField.name,
+  city: generalField.name,
+  numberOfEmployees: Joi.object({
+    from: Joi.number().min(0).label("minimum number Of Employee [from] "),
+    to: Joi.number()
+      .greater(Joi.ref("from"))
+      .label("maximum number Of Employee [to] "),
   }),
-  numberOfEmployees: generalField.number.min(11).max(20),
   companyEmail: generalField.email,
 });
 
 const paramsCompanyVal = Joi.object({
   id: generalField.id.required(),
-  jobId: generalField.id, // required just for one api (applicationsForOwnerCompany)
+  date: Joi.date(),
 });
+
 export { addCompanyVal, updateCompanyVal, paramsCompanyVal };

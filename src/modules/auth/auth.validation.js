@@ -2,17 +2,21 @@ import Joi from "joi";
 import generalField from "../../utils/generalFields.js";
 
 const signUpVal = Joi.object({
-  username: Joi.object({
-    firstName: generalField.name.required(),
-    lastName: generalField.name.required(),
-  }).required(),
+  firstName: generalField.name.required(),
+  lastName: generalField.name.required(),
   email: generalField.email.required(),
   password: generalField.password.required(),
   confirmPassword: generalField.confirmPassword.required(),
   role: generalField.role,
   mobileNumber: generalField.phone.required(),
   birthDate: generalField.date,
-  recoveryEmail: generalField.email.optional(),
+  recoveryEmail: generalField.email
+    .disallow(Joi.ref("email"))
+    .trim()
+    .required()
+    .messages({
+        " *recoveryEmail*": "must be valid Email and not equal previous email  ",
+    }),
 }).required();
 
 const activeAccountVal = Joi.object({
@@ -28,24 +32,28 @@ const recoveryEmailVal = Joi.object({
 }).required();
 
 const loginVal = Joi.object({
-  email: generalField.email.when("mobileNumber",{
-    is:Joi.exist(),
-    then:Joi.optional(),
-    otherwise:Joi.required()
+  email: generalField.email.when("mobileNumber", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
   }),
   mobileNumber: generalField.phone,
   password: generalField.password.required(),
 }).required();
 
 const updateMeVal = Joi.object({
-  username: Joi.object({
-    firstName: generalField.name,
-    lastName: generalField.name,
-  }),
+  firstName: generalField.name,
+  lastName: generalField.name,
   email: generalField.email,
-  mobileNumber: generalField.name,
+  mobileNumber: generalField.phone,
   birthDate: generalField.date,
-  recoveryEmail: generalField.email,
+  recoveryEmail: generalField.email
+    .disallow(Joi.ref("email"))
+    .trim()
+    .message({
+      message:
+        " *recoveryEmail* must be valid Email and not equal previous email  ",
+    }),
 }).required();
 
 const forgetPassVal = Joi.object({
@@ -59,15 +67,22 @@ const resetPassVal = Joi.object({
 }).required();
 
 const updatePassVal = Joi.object({
-  email: generalField.email.when("mobileNumber",{
-    is:Joi.exist(),
-    then:Joi.optional(),
-    otherwise:Joi.required()
+  email: generalField.email.when("mobileNumber", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
   }),
   mobileNumber: generalField.phone,
   password: generalField.password.required(),
-  newPassword: generalField.password.required(),
-  confirmPassword: Joi.valid(Joi.ref("newPassword")).required(),
+  newPassword: generalField.password
+    .disallow(Joi.ref("password"))
+    .required()
+    .messages({
+      "*": "new password should not be the same like old password ",
+    }),
+  confirmPassword: Joi.valid(Joi.ref("newPassword"))
+    .messages({"*confirmPassword* " :"confirm your new Password"})
+    .required(),
 }).required();
 
 export {

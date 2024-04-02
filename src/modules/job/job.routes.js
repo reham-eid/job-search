@@ -1,11 +1,12 @@
-import { Router } from "express";
 import { validation } from "../../middlewares/validation.middleware.js";
 import * as jobValidation from "./job.validation.js";
 import * as jobController from "./job.controller.js";
 import { roles } from "../../common/types/enum.js";
 import { uploadSingleFile } from "../../service/fileUploads/multer.js";
 import { allowTo, protectedRoute } from "../../middlewares/auth.js";
+import { Router } from "express";
 
+const jobRouter = Router();
 
 jobRouter
   .route("/")
@@ -17,25 +18,20 @@ jobRouter
   )
   .get(
     protectedRoute,
-    allowTo(Object.values(roles)),
+    allowTo(roles.hr , roles.user),
     validation(jobValidation.allJobVal),
     jobController.allJob
   )
-  .get(
+  jobRouter.get(
+    '/search',
     protectedRoute,
-    allowTo(Object.values(roles)),
+    allowTo(roles.hr , roles.user),
     validation(jobValidation.allJobForOneCompanyVal),
     jobController.allJobForOneCompany
   );
 
 jobRouter
   .route("/:id")
-  .get(
-    protectedRoute,
-    allowTo(Object.values(roles)),
-    validation(jobValidation.paramsJobVal),
-    jobController.Excel
-  )
   .post(
     protectedRoute,
     allowTo(roles.user),

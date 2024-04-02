@@ -1,6 +1,12 @@
 import Joi from "joi";
 import { validateObjectId } from "../middlewares/validation.middleware.js";
-import { location, roles, status, workTime } from "../common/types/enum.js";
+import {
+  level,
+  location,
+  roles,
+  status,
+  workTime,
+} from "../common/types/enum.js";
 
 const generalField = {
   name: Joi.string().trim(),
@@ -18,18 +24,11 @@ const generalField = {
   role: Joi.string().valid(...Object.values(roles)),
   jobLocation: Joi.string().valid(...Object.values(location)),
   workingTime: Joi.string().valid(...Object.values(workTime)),
-  seniorityLevel: Joi.string().valid(
-    "Junior",
-    "Mid-Level",
-    "Senior",
-    "Team-Lead",
-    "CTO"
-  ),
+  seniorityLevel: Joi.string().valid(...Object.values(level)),
   skills: Joi.array().items(Joi.string().required()),
   status: Joi.string().valid(...Object.values(status)),
   id: Joi.string().custom(validateObjectId),
   date: Joi.date(),
-  number: Joi.number(),
   file: Joi.object({
     fieldname: Joi.string().required(),
     originalname: Joi.string().required(),

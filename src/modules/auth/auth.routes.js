@@ -63,7 +63,7 @@ authRouter
   .get(
     "/recoveryEmails",
     protectedRoute,
-    allowTo(roles.admin),
+    allowTo(roles.user),
     validation(authValidation.recoveryEmailVal),
     authController.recoveryEmail
   );

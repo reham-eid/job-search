@@ -7,14 +7,20 @@ import { allowTo, protectedRoute } from "../../middlewares/auth.js";
 
 const companyRouter = Router();
 
-
 companyRouter
   .route("/")
+  .put(
+    protectedRoute,
+    allowTo(roles.hr),
+    validation(companyValidation.updateCompanyVal),
+    companyController.updateCompany
+  )
   .post(
     protectedRoute,
     allowTo(roles.hr),
     validation(companyValidation.addCompanyVal),
-    companyController.addCompany)
+    companyController.addCompany
+  )
   .get(
     protectedRoute,
     allowTo(roles.hr, roles.user),
@@ -24,19 +30,20 @@ companyRouter
 companyRouter.use(protectedRoute, allowTo(roles.hr));
 
 companyRouter.get(
-  "/applications/:id/:jobId",
+  "/applications/:id",
   validation(companyValidation.paramsCompanyVal),
   companyController.applicationsForOwnerCompany
+);
+companyRouter.get(
+  "/excel/:id",
+  validation(companyValidation.paramsCompanyVal),
+  companyController.Excel
 );
 companyRouter
   .route("/:id")
   .get(
     validation(companyValidation.paramsCompanyVal),
     companyController.oneCompany
-  )
-  .put(
-    validation(companyValidation.updateCompanyVal),
-    companyController.updateCompany
   )
   .delete(
     validation(companyValidation.paramsCompanyVal),

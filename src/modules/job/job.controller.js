@@ -1,11 +1,10 @@
 import Application from "../../../DB/models/application.model.js";
 import Company from "../../../DB/models/company.model.js";
 import Job from "../../../DB/models/job.model.js";
+import { message } from "../../common/messages/message.js";
 import { asyncHandler } from "../../middlewares/asyncHandler.js";
 import cloudinary from "../../service/fileUploads/cloudinary.js";
-import XlsxPopulate from "xlsx-populate";
-import xlsx from "xlsx";
-import schedule from "node-schedule";
+
 // @desc add jobs by hr company
 // @route POST  /api/v1/jobs/
 // @access private
@@ -27,7 +26,7 @@ const updateJob = asyncHandler(async (req, res, next) => {
     _id: req.params.id,
     addedBy: req.user._id,
   });
-  if (!isJob) return res.status(404).json({ message: "job Not found" });
+  if (!isJob) return next({ message: message.job.status404,cause:404 });
 
   //update job
   const job = await Job.findByIdAndUpdate(
@@ -49,39 +48,50 @@ const deleteJob = asyncHandler(async (req, res, next) => {
     _id: req.params.id,
     addedBy: req.user._id,
   });
-  if (!isJob) return res.status(404).json({ message: "job Not found" });
+  if (!isJob) return next({ message: message.job.status404,cause:404 });
 
   // soft delete job
-  await isJob.updateOne({},{isDeleted:true});
+  await isJob.updateOne({}, { isDeleted: true });
 
   res.status(200).json({ message: "job deleted", job });
 });
 // @desc Get all Jobs
 // @route GET
-// @access private
+// @access private *no
 const allJob = asyncHandler(async (req, res, next) => {
   // 2 apis in 1
   ///api/v1/jobs/?
   // check query
   if (req.query) {
+    //whats wrong!
     //6- all Jobs that match some filters
     const job = await Job.find({ ...req.query }); ////filter feature
+    console.log(req.query);
+
     return res.status(200).json({ message: `jobs:  `, job });
   }
   //4- all Jobs with their company’s information
   ///api/v1/jobs/
-  const job = await Job.find().populate([
+  // aggregate
+  const job = await Job.aggregate([
     {
-      path: "addedBy",
-      select: "username",
-      populate: [{ path: "company", select: "companyName" }],
+      $lookup: {
+        from: "companies",
+        localField: "addedBy",
+        foreignField: "companyHR",
+        as: "company",
+      },
+    },
+    {
+      $unwind: "$company",
     },
   ]);
   res.status(200).json({ message: `jobs: `, job });
 });
+
 // @desc Get all Jobs
 // @route GET /api/v1/jobs?
-// @access private
+// @access private *done
 const allJobForOneCompany = asyncHandler(async (req, res, next) => {
   // check params
   //5-all Jobs for a specific company
@@ -89,25 +99,23 @@ const allJobForOneCompany = asyncHandler(async (req, res, next) => {
     {
       path: "companyHR",
       select: "username",
-      populate: [{ path: "jobs", select: "jobTitle" }],
+      populate: [{ path: "user", populate: [{ path: "jobs" }] }],
     },
   ]);
-  if (!company) return next(new Error("company not found", { cause: 404 }));
 
-  res.status(200).json({ message: `jobs: `, result:company[0].companyHR.jobs });
+  res.status(200).json({ message: `jobs: `, result: company }); //[0].companyHR.jobs
 });
 // @desc user applay to job for spicific company
 // @route POST  /api/v1/jobs/:id
 // @access private
 const addApplication = asyncHandler(async (req, res, next) => {
   // data from body
-
   //check if user applied an application for jobId before or not
   const applied = await Application.findOne({
-    userId:req.user._id,
-    jobId:req.params.id
-  })
-  if(applied)return next(new Error("already applied", { cause: 409 }));
+    userId: req.user._id,
+    jobId: req.params.id,
+  });
+  if (applied) return next(new Error("already applied", { cause: 409 }));
   // check cv
   if (!req.file) return next(new Error("CV is required", { cause: 400 }));
 
@@ -127,35 +135,13 @@ const addApplication = asyncHandler(async (req, res, next) => {
     .json({ message: "Application send successfully", application });
 });
 
-//add an endpoint that collects the applications for a specific company
-// on a specific day and create an Excel sheet with this data
-const Excel = asyncHandler(async (req, res, next) => {
-  schedule.scheduleJob("0 5 * * 6", async function () {
-    //5:00 per week per month on saterday
-    const w = XlsxPopulate.fromBlankAsync().then((workbook) => {
-      // check company in db by params (merg param)
-      const company = Company.findById(req.params.companyId);
-      if (!company) return next(new Error("company not found", { cause: 404 }));
 
-      const app = Application.find({
-        jobId: req.params.id,
-      });
-      // Modify the workbook.
-      for (const oneApp of app) {
-        workbook.sheet("Sheet1").cell("A1").value("_id");
-        workbook.sheet("Sheet1").cell("B1").value(oneApp._id);
-        workbook.sheet("Sheet1").cell("A2").value("jobId");
-        workbook.sheet("Sheet1").cell("B2").value(oneApp.jobId);
-        workbook.sheet("Sheet1").cell("A3").value("userId");
-        workbook.sheet("Sheet1").cell("B3").value(oneApp.userId);
-      }
 
-      // Write to file.
-      return workbook.toFileAsync("./out.xlsx");
-    });
-    let workbook1 = xlsx.writeFileAsync(w);
-    console.log(workbook1);
-  });
-});
-
-export { addJob, updateJob, deleteJob, allJob, addApplication,allJobForOneCompany, Excel };
+export {
+  addJob,
+  updateJob,
+  deleteJob,
+  allJob,
+  addApplication,
+  allJobForOneCompany,
+};

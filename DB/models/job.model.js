@@ -43,12 +43,12 @@ const jobSchema = new Schema(
   },
   { timestamps: true, strictQuery: true }
 );
-// virtual new field called applications
-jobSchema.virtual("applications", {
-  ref: "application",
-  localField: "_id", // job
-  foreignField: "jobId", //application
-});
+// // virtual new field called applications
+// jobSchema.virtual("applications", {
+//   ref: "application",
+//   localField: "_id", // job
+//   foreignField: "jobId", //application
+// });
 
 
 const Job = model("job", jobSchema);

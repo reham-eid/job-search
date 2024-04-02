@@ -7,6 +7,7 @@ const userSchema = new Schema(
       firstName: { type: String, trim: true },
       lastName: { type: String, trim: true },
     },
+
     email: {
       type: String,
       trim: true,
@@ -37,10 +38,6 @@ const userSchema = new Schema(
       enum: Object.values(status),
       default: status.offline,
     },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
     isEmailConfirm: {
       type: Boolean,
       default: false,
@@ -49,6 +46,7 @@ const userSchema = new Schema(
   },
   { timestamps: true, strictQuery: true }
 );
+
 // virtual new field called jobs
 userSchema.virtual("jobs", {
   ref: "job",

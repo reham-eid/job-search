@@ -8,6 +8,8 @@ Object.freeze(roles);
 export const status = {
   online: "Online",
   offline: "Offline",
+  blocked: "Blocked",
+  softDelete : "soft Deleted"
 };
 Object.freeze(status);
 

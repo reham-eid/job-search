@@ -20,7 +20,7 @@ export const sendEmail = asyncHandler(
       html,
     });
     console.log("Message sent: %s ", info.messageId);
-    if (info.accepted.length > 0) return true;
-    return false;
+    
+    return info.accepted.length ? true :false
   }
 );
