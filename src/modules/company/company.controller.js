@@ -1,6 +1,5 @@
-import Application from "../../../DB/models/application.model.js";
+import randomstring from "randomstring";
 import Company from "../../../DB/models/company.model.js";
-import Job from "../../../DB/models/job.model.js";
 import { Types } from "mongoose";
 
 import { UserClass } from "../../common/classes/user.class.js";
@@ -12,6 +11,7 @@ import slugify from "slugify";
 import fs from "fs";
 import { log } from "console";
 import XlsxPopulate from "xlsx-populate";
+import path from "path";
 
 // @desc create Company profile
 // @route POST  /api/v1/companies/
@@ -239,24 +239,42 @@ const Excel = asyncHandler(async (req, res, next) => {
     // },
   ]);
   const w = XlsxPopulate.fromBlankAsync().then((workbook) => {
-
     // Modify the workbook.
-    let rowIndex = 1
+    let rowIndex = 1;
+    let varPath = randomstring.generate({
+      length: 5,
+      charset: "alphabetic",
+    });
     for (const oneApp of companyApplications) {
-          workbook.sheet("Sheet1").cell(`A${rowIndex}`).value("_id");
-          workbook.sheet("Sheet1").cell(`B${rowIndex}`).value(oneApp.job.applications._id.toString());
-          workbook.sheet("Sheet1").cell(`A${rowIndex+1}`).value("jobId");
-          workbook.sheet("Sheet1").cell(`B${rowIndex+1}`).value(oneApp.job.applications.jobId.toString());
-          workbook.sheet("Sheet1").cell(`A${rowIndex+2}`).value("userId");
-          workbook.sheet("Sheet1").cell(`B${rowIndex+2}`).value(oneApp.job.applications.userId.toString());
-          rowIndex += 3; // Increment rowIndex for next application
-        
+      workbook.sheet("Sheet1").cell(`A${rowIndex}`).value("_id");
+      workbook
+        .sheet("Sheet1")
+        .cell(`B${rowIndex}`)
+        .value(oneApp.job.applications._id.toString());
+      workbook
+        .sheet("Sheet1")
+        .cell(`A${rowIndex + 1}`)
+        .value("jobId");
+      workbook
+        .sheet("Sheet1")
+        .cell(`B${rowIndex + 1}`)
+        .value(oneApp.job.applications.jobId.toString());
+      workbook
+        .sheet("Sheet1")
+        .cell(`A${rowIndex + 2}`)
+        .value("userId");
+      workbook
+        .sheet("Sheet1")
+        .cell(`B${rowIndex + 2}`)
+        .value(oneApp.job.applications.userId.toString());
+      rowIndex += 3; // Increment rowIndex for next application
     }
     // Write to file.
-    return workbook.toFileAsync("./out.xlsx");
+    return workbook.toFileAsync(
+      path.resolve(`src/modules/company/applications-reborts/${varPath}.xlsx`)
+    );
   });
   return res.json({ message: "done" });
-
 });
 
 export {
