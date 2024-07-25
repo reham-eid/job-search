@@ -22,6 +22,7 @@ const addCompanyVal = Joi.object({
     .required()
     .label("minimum number Of Employee [from]"),
   to: Joi.number()
+  .min(10)
     .greater(Joi.ref("from"))
     .required()
     .label("maximum number Of Employee [to] "),
